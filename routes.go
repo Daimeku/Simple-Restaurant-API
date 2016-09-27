@@ -17,7 +17,8 @@ type Routes []Route
 func makeRouter() *httprouter.Router {
 	router := httprouter.New()
 	for _, route := range routes {
-		router.Handle(route.method, route.path, route.handlerFunc)
+		handlerFunction := setLogger(route.handlerFunc, route.name)
+		router.Handle(route.method, route.path, handlerFunction)
 	}
 
 	return router
