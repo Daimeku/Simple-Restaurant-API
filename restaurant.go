@@ -9,14 +9,24 @@ import (
 
 // ===========================RESTAURANT=================================================================
 type Restaurant struct {
-	id         int
-	name       string
-	searchName string
+	Id         int    `json:"id"`
+	Name       string `json:"name"`
+	SearchName string `json:searchName`
 }
+
+type Restaurantl *struct {
+	Id         int    `json:"id"`
+	Name       string `json:"name"`
+	SearchName string `json:searchName`
+}
+
+type Restaurants []Restaurant
+
+// type RestaurantList []*Restaurant
 
 //returns a string with the values of the restaurant
 func (res *Restaurant) String() string {
-	var fullString string = "{ " + "id: " + strconv.Itoa(res.id) + " | name: " + res.name + " | searchName: " + res.searchName + " }"
+	var fullString string = "{ " + "id: " + strconv.Itoa(res.Id) + " | name: " + res.Name + " | searchName: " + res.SearchName + " }"
 	return fullString
 }
 
@@ -48,8 +58,8 @@ func (res *Restaurant) findById(id int) bool {
 	}
 
 	//set restaurant values
-	res.id = resId
-	res.name = resName
+	res.Id = resId
+	res.Name = resName
 
 	conf = true
 	return conf
@@ -117,7 +127,7 @@ func (res *Restaurant) populateList(rows *sql.Rows) ([]*Restaurant, error) {
 	for rows.Next() {
 		restaurant := Restaurant{}
 		// populate the restaurant and check for errors
-		err := rows.Scan(&restaurant.id, &restaurant.name, &restaurant.searchName)
+		err := rows.Scan(&restaurant.Id, &restaurant.Name, &restaurant.SearchName)
 		if err != nil {
 			return nil, err
 		}
@@ -142,9 +152,9 @@ func (res *Restaurant) populate(rows *sql.Rows) bool {
 	}
 
 	//populate res
-	res.id = resId
-	res.name = resName
-	res.searchName = resSearchName
+	res.Id = resId
+	res.Name = resName
+	res.SearchName = resSearchName
 
 	return conf
 }

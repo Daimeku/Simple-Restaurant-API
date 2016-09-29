@@ -9,11 +9,8 @@ import (
 
 type HandleFunc func(http.ResponseWriter, *http.Request, httprouter.Params)
 
-// func (handlerFunction httprouter.Handle) ServeHTTP(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-// 	handlerFuncton(writer, request, params)
-// }
-
 //wraps the handler function in a logger
+//the function that it returns matches the type of httprouter.Handle & my type HandleFunc
 func setLogger(innerHandler httprouter.Handle, name string) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	//I need to return a function that fits the type httprouter.Handle

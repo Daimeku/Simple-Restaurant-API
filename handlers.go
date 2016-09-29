@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/julienschmidt/httprouter"
@@ -18,7 +19,7 @@ func handleIndex(writer http.ResponseWriter, request *http.Request, _ httprouter
 func handleRestaurant(writer http.ResponseWriter, request *http.Request, parms httprouter.Params) {
 
 	searchName := parms.ByName("restaurantSearchName") //retrieve the searchName
-	restaurant := Restaurant{id: 1, name: ""}
+	restaurant := Restaurant{Id: 1, Name: ""}
 
 	conf, err := restaurant.findByField("searchName", searchName) // find the restaurant by its searchName
 	if err != nil {                                               // if it isn't found return an error
@@ -27,11 +28,18 @@ func handleRestaurant(writer http.ResponseWriter, request *http.Request, parms h
 	}
 	//if the restaurant was found display it
 	if conf {
-		fmt.Fprintf(writer, "the restaurant name is: %s", restaurant.name)
-		fmt.Println("the param %s", restaurant.String())
+		writer.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		writer.WriteHeader(http.StatusOK)
+		// x, _ := json.Marshal(restaurant)
+		// fmt.Fprintf(writer, "the restaurant name is: %s", x)
+		fmt.Println("the param ", restaurant)
+		json.NewEncoder(writer).Encode(restaurant)
 	} else {
-		fmt.Fprint(writer, "the restaurant %s was not found", searchName)
+		writer.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		writer.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(writer, "the restaurant ", searchName, " was not found")
 		fmt.Println("the restaurant %s wasn't found", searchName)
+
 	}
 
 }
@@ -45,6 +53,10 @@ func handleRestaurants(writer http.ResponseWriter, request *http.Request, _ http
 		fmt.Fprint(writer, "No restaurants available")
 		return
 	}
+	writer.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	writer.WriteHeader(http.StatusOK)
+	// jsList, _ := json.Marshal(restaurants)
 	// display the list of restaurants
-	fmt.Fprint(writer, "restaurants", restaurants)
+	// fmt.Fprint(writer, "restaurants", jsList)
+	json.NewEncoder(writer).Encode(restaurants)
 }
