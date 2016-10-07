@@ -1,26 +1,17 @@
 package main
 
 import (
-	"fmt"
-	// "html"
 	"database/sql"
-	// "encoding/json"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	// "github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 )
 
 func main() {
-
 	router := makeRouter()
-	// router.GET("/", handleIndex)
-	// router.GET("/data/restaurants/:restaurantSearchName", handleRestaurant)
-	// router.GET("/data/restaurants", handleRestaurants)
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
-
-// =====================================END HANDLERS=====================================================
 
 //just checks if a connection to the database can be established
 func testConnection() bool {
