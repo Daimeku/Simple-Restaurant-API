@@ -91,7 +91,7 @@ func (res *Restaurant) FindByField(fieldName string, fieldValue string) (bool, e
 }
 
 //finds and returns a slice of all *Restaurants
-func (res *Restaurant) FindAll() []*Restaurant {
+func (res *Restaurant) FindAll() ([]*Restaurant, error) {
 
 	resList := make([]*Restaurant, 0) // create the slice of restaurants
 
@@ -99,24 +99,24 @@ func (res *Restaurant) FindAll() []*Restaurant {
 	db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/mydb")
 	if err != nil {
 		fmt.Println("an error occurred while connecting to the db - ", err)
-		return resList
+		return nil, err
 	}
 
 	//execute the query and check for errors
 	result, err := db.Query("SELECT * FROM restaurants")
 	if err != nil {
 		fmt.Println("an error occurred while executing the query - ", err)
-		return resList
+		return nil, err
 	}
 
 	//populate the list of *Restaurants and check for errors
 	resList, err = res.PopulateList(result)
 	if err != nil {
 		fmt.Println("error populating the list - ", err)
-		return nil
+		return nil, err
 	}
 
-	return resList
+	return resList, nil
 }
 
 //accepts *sql.Rows and creates a list of *Restaruants
