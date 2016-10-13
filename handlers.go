@@ -32,7 +32,6 @@ func handleRestaurant(writer http.ResponseWriter, request *http.Request, parms h
 	searchName := parms.ByName("restaurantSearchName") //retrieve the searchName
 	// restaurant := models.Restaurant{Id: 1, Name: ""}
 	restaurant := models.NewRestaurant()
-	// var restaurant *models.Restaurant
 
 	conf, err := restaurant.FindByField("searchName", searchName) // find the restaurant by its searchName
 	if err != nil {                                               // if it isn't found return an error
@@ -45,7 +44,7 @@ func handleRestaurant(writer http.ResponseWriter, request *http.Request, parms h
 		writer.WriteHeader(http.StatusOK)
 		// x, _ := json.Marshal(restaurant)
 		// fmt.Fprintf(writer, "the restaurant name is: %s", x)
-		response, _ := formatResourceReponse(8)
+		response, _ := formatResourceReponse(restaurant)
 		json.NewEncoder(writer).Encode(response)
 		// fmt.Println("the param ", restaurant)
 		// json.NewEncoder(writer).Encode(restaurant)
@@ -62,6 +61,9 @@ func handleRestaurant(writer http.ResponseWriter, request *http.Request, parms h
 // handles the /restaurants GET route
 func handleRestaurants(writer http.ResponseWriter, request *http.Request, _ httprouter.Params) {
 	var res *models.Restaurant
+	// var err error
+	// var restaurants []interface{}
+
 	restaurants, err := res.FindAll() //find all the restaurants
 	if err != nil {
 		//format error response here 500 internal server error
@@ -78,7 +80,15 @@ func handleRestaurants(writer http.ResponseWriter, request *http.Request, _ http
 	writer.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	writer.WriteHeader(http.StatusOK)
 	// return the list of restaurants
-	json.NewEncoder(writer).Encode(restaurants)
+	// json.NewEncoder(writer).Encode(restaurants)
+
+	resList := make([]interface{}, len(restaurants))
+	for v, t := range restaurants {
+		resList[v] = t
+	}
+
+	resourceListResponse, _ := formatResourceListResponse(resList)
+	json.NewEncoder(writer).Encode(resourceListResponse)
 }
 
 func handleErrorResponse(writer http.ResponseWriter, err error) {
@@ -96,14 +106,16 @@ func formatResourceReponse(resource interface{}) (models.ResourceResponse, error
 
 	//get reflection of resource
 	resourceRef := reflect.ValueOf(resource)
-	//check if the resource is a struct before proceeeding
+	// resourceRefType := resourceRef.Elem().Type() // get the pointer for the resource and its t
+	// check if the resource is a struct before proceeeding
 	if kind := resourceRef.Kind().String(); kind != "struct" {
+		fmt.Println(kind)
 		fmt.Println("this is an error")
 		return resourceResponse, errors.New("The resource to be formatted must be a struct")
 	}
 
-	resourceRefType := resourceRef.Elem().Type() // get the pointer for the resource and its type
-
+	// resourceRefType := resourceRef.Elem().Type() // get the pointer for the resource and its type
+	resourceRefType := resourceRef.Type()
 	//loop through resource Fields and add them to the attributes map
 	//should be in the form "[field name] = field value"
 	for i := 0; i < resourceRef.NumField(); i++ {
@@ -125,4 +137,20 @@ func formatResourceReponse(resource interface{}) (models.ResourceResponse, error
 	resourceResponse.Data[0] = formattedResource
 
 	return resourceResponse, nil
+}
+
+func formatResourceListResponse(resourceList []interface{}) (models.ResourceListResponse, error) {
+	resourceListResponse := models.ResourceListResponse{}
+
+	for i := 0; i < len(resourceList); i++ {
+		resourceResponse, err := formatResourceReponse(resourceList[i])
+
+		if err != nil {
+			fmt.Println("There was an error formatting the response - ", err)
+			return resourceListResponse, err
+		}
+		resourceListResponse.Data = append(resourceListResponse.Data, resourceResponse)
+	}
+
+	return resourceListResponse, nil
 }

@@ -91,9 +91,36 @@ func (res *Restaurant) FindByField(fieldName string, fieldValue string) (bool, e
 }
 
 //finds and returns a slice of all *Restaurants
-func (res *Restaurant) FindAll() ([]*Restaurant, error) {
+func (res *Restaurant) FindAllPtr() ([]*Restaurant, error) {
 
 	resList := make([]*Restaurant, 0) // create the slice of restaurants
+
+	//create the connection and check for errors
+	db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/mydb")
+	if err != nil {
+		fmt.Println("an error occurred while connecting to the db - ", err)
+		return nil, err
+	}
+
+	//execute the query and check for errors
+	result, err := db.Query("SELECT * FROM restaurants")
+	if err != nil {
+		fmt.Println("an error occurred while executing the query - ", err)
+		return nil, err
+	}
+
+	//populate the list of *Restaurants and check for errors
+	resList, err = res.PopulateListPtr(result)
+	if err != nil {
+		fmt.Println("error populating the list - ", err)
+		return nil, err
+	}
+
+	return resList, nil
+}
+
+func (res *Restaurant) FindAll() ([]Restaurant, error) {
+	resList := make([]Restaurant, 0) // create the slice of restaurants
 
 	//create the connection and check for errors
 	db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/mydb")
@@ -120,7 +147,7 @@ func (res *Restaurant) FindAll() ([]*Restaurant, error) {
 }
 
 //accepts *sql.Rows and creates a list of *Restaruants
-func (res *Restaurant) PopulateList(rows *sql.Rows) ([]*Restaurant, error) {
+func (res *Restaurant) PopulateListPtr(rows *sql.Rows) ([]*Restaurant, error) {
 
 	var resList []*Restaurant
 
@@ -135,6 +162,24 @@ func (res *Restaurant) PopulateList(rows *sql.Rows) ([]*Restaurant, error) {
 			return nil, err
 		}
 		resList = append(resList, &restaurant) // add the restaurant to the list
+	}
+	return resList, nil
+}
+
+func (res *Restaurant) PopulateList(rows *sql.Rows) ([]Restaurant, error) {
+	var resList []Restaurant
+
+	// foreach row, read a restaurant from rows and add it to the list
+	for rows.Next() {
+		restaurant := Restaurant{}
+		restaurant.Type = "Restaurant"
+		// restaurant := NewRestaurant()
+		// populate the restaurant and check for errors
+		err := rows.Scan(&restaurant.Id, &restaurant.Name, &restaurant.SearchName)
+		if err != nil {
+			return nil, err
+		}
+		resList = append(resList, restaurant) // add the restaurant to the list
 	}
 	return resList, nil
 }
@@ -163,8 +208,12 @@ func (res *Restaurant) Populate(rows *sql.Rows) bool {
 }
 
 //use as a constructor
-func NewRestaurant() *Restaurant {
+func NewRestaurantPtr() *Restaurant {
 	return &Restaurant{Type: "restaurant"}
+}
+
+func NewRestaurant() Restaurant {
+	return Restaurant{Type: "restaurant"}
 }
 
 // ======================================END RESTAURANT==================================================

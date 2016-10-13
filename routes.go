@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/julienschmidt/httprouter"
-	// "net/http"
 )
 
 type Route struct {
