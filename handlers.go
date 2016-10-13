@@ -44,7 +44,7 @@ func handleRestaurant(writer http.ResponseWriter, request *http.Request, parms h
 		writer.WriteHeader(http.StatusOK)
 		// x, _ := json.Marshal(restaurant)
 		// fmt.Fprintf(writer, "the restaurant name is: %s", x)
-		response, _ := formatResourceReponse(restaurant)
+		response, _ := formatResourceResponse(restaurant)
 		json.NewEncoder(writer).Encode(response)
 		// fmt.Println("the param ", restaurant)
 		// json.NewEncoder(writer).Encode(restaurant)
@@ -96,7 +96,7 @@ func handleErrorResponse(writer http.ResponseWriter, err error) {
 }
 
 //accepts a resource, formats it and returns the JSONAPI formatted ResourceResponse
-func formatResourceReponse(resource interface{}) (models.ResourceResponse, error) {
+func formatResourceResponse(resource interface{}) (models.FormattedResource, error) {
 
 	formattedResource := models.FormattedResource{}
 	formattedResource.Attributes = make(map[string]interface{})
@@ -111,7 +111,7 @@ func formatResourceReponse(resource interface{}) (models.ResourceResponse, error
 	if kind := resourceRef.Kind().String(); kind != "struct" {
 		fmt.Println(kind)
 		fmt.Println("this is an error")
-		return resourceResponse, errors.New("The resource to be formatted must be a struct")
+		return formattedResource, errors.New("The resource to be formatted must be a struct")
 	}
 
 	// resourceRefType := resourceRef.Elem().Type() // get the pointer for the resource and its type
@@ -136,14 +136,14 @@ func formatResourceReponse(resource interface{}) (models.ResourceResponse, error
 	//create the resourceResponse and populate its Data
 	resourceResponse.Data[0] = formattedResource
 
-	return resourceResponse, nil
+	return formattedResource, nil
 }
 
 func formatResourceListResponse(resourceList []interface{}) (models.ResourceListResponse, error) {
 	resourceListResponse := models.ResourceListResponse{}
 
 	for i := 0; i < len(resourceList); i++ {
-		resourceResponse, err := formatResourceReponse(resourceList[i])
+		resourceResponse, err := formatResourceResponse(resourceList[i])
 
 		if err != nil {
 			fmt.Println("There was an error formatting the response - ", err)

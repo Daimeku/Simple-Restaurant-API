@@ -3,5 +3,5 @@ package models
 import ()
 
 type ResourceListResponse struct {
-	Data []ResourceResponse `json:data`
+	Data []FormattedResource `json:data`
 }
