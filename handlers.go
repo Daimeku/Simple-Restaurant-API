@@ -43,6 +43,7 @@ func handleRestaurant(writer http.ResponseWriter, request *http.Request, parms h
 		json.NewEncoder(writer).Encode(errorResponse)
 		return
 	}
+	restaurant.LoadMenuItems()
 	//if the restaurant was found display it
 	if conf {
 		writer.Header().Set("Content-Type", ContentType)

@@ -7,12 +7,18 @@ import (
 	"strconv"
 )
 
+const (
+	Driver           = "mysql"
+	ConnectionString = "root:@tcp(localhost:3306)/mydb"
+)
+
 // ===========================RESTAURANT=================================================================
 type Restaurant struct {
-	Id         int    `json:"id"`
-	Name       string `json:"name"`
-	SearchName string `json:searchName`
-	Type       string `json:type`
+	Id         int        `json:"id"`
+	Name       string     `json:"name"`
+	SearchName string     `json:searchName`
+	Type       string     `json:type`
+	Menu       []MenuItem `json:menu`
 }
 
 type Restaurantl *struct {
@@ -36,7 +42,7 @@ func (res *Restaurant) FindById(id int) bool {
 	var conf bool = false
 
 	//connect to the database
-	db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/mydb")
+	db, err := sql.Open(Driver, ConnectionString)
 	if err != nil {
 		fmt.Println("error opening connection in model - ", err)
 		return false
@@ -72,7 +78,7 @@ func (res *Restaurant) FindByField(fieldName string, fieldValue string) (bool, e
 	var query string = "SELECT * FROM restaurants where restaurants." + fieldName + " = ?"
 
 	//connect to the database
-	db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/mydb")
+	db, err := sql.Open(Driver, ConnectionString)
 	if err != nil {
 		fmt.Println("error opening connection in model - ", err)
 		return false, err
@@ -96,7 +102,7 @@ func (res *Restaurant) FindAllPtr() ([]*Restaurant, error) {
 	resList := make([]*Restaurant, 0) // create the slice of restaurants
 
 	//create the connection and check for errors
-	db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/mydb")
+	db, err := sql.Open(Driver, ConnectionString)
 	if err != nil {
 		fmt.Println("an error occurred while connecting to the db - ", err)
 		return nil, err
@@ -123,7 +129,7 @@ func (res *Restaurant) FindAll() ([]Restaurant, error) {
 	resList := make([]Restaurant, 0) // create the slice of restaurants
 
 	//create the connection and check for errors
-	db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/mydb")
+	db, err := sql.Open(Driver, ConnectionString)
 	if err != nil {
 		fmt.Println("an error occurred while connecting to the db - ", err)
 		return nil, err
@@ -205,6 +211,30 @@ func (res *Restaurant) Populate(rows *sql.Rows) bool {
 	res.SearchName = resSearchName
 
 	return conf
+}
+
+func (res *Restaurant) LoadMenuItems() bool {
+
+	db, err := sql.Open(Driver, ConnectionString)
+	if err != nil {
+		fmt.Println("error opening connection for loading menuItems")
+		return false
+	}
+
+	result, err := db.Query("select * FROM menuItems WHERE restaurantId = ?", res.Id)
+	if err != nil {
+		fmt.Println("Error selecting menuItems - ", err)
+		return false
+	}
+
+	menuItem := MenuItem{}
+	conf := menuItem.populate(result)
+	if conf != true {
+		fmt.Println("failed to populate menuItem")
+		return false
+	}
+	res.Menu = append(res.Menu, menuItem)
+	return true
 }
 
 //use as a constructor
