@@ -11,12 +11,16 @@ import (
 	"reflect"
 )
 
+const (
+	ContentType = "application/json;charset=UTF-8"
+)
+
 // ======================================HANDLERS========================================================
 
 // handles the home route
 func handleIndex(writer http.ResponseWriter, request *http.Request, _ httprouter.Params) {
 	// fmt.Fprint(writer, "this is the home page ", request.URL.Path)
-	writer.Header().Set("content-type", "application/json;charset=UTF-8")
+	writer.Header().Set("content-type", ContentType)
 	var s string
 	s = "MytestString"
 	m := make(map[string]interface{})
@@ -35,12 +39,13 @@ func handleRestaurant(writer http.ResponseWriter, request *http.Request, parms h
 
 	conf, err := restaurant.FindByField("searchName", searchName) // find the restaurant by its searchName
 	if err != nil {                                               // if it isn't found return an error
-		fmt.Fprint(writer, "There was an error trying to find the requested restaurant")
+		errorResponse := formatErrorResponse("error retrieving resource", http.StatusInternalServerError)
+		json.NewEncoder(writer).Encode(errorResponse)
 		return
 	}
 	//if the restaurant was found display it
 	if conf {
-		writer.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		writer.Header().Set("Content-Type", ContentType)
 		writer.WriteHeader(http.StatusOK)
 		// x, _ := json.Marshal(restaurant)
 		// fmt.Fprintf(writer, "the restaurant name is: %s", x)
@@ -69,10 +74,11 @@ func handleRestaurants(writer http.ResponseWriter, request *http.Request, _ http
 		//format error response here 500 internal server error
 		writer.Header().Set("Content-Type", "application/json;charset=UTF-8")
 		writer.WriteHeader(http.StatusInternalServerError)
-		var errResponse models.ErrorResponse
-		errResponse.Status = http.StatusInternalServerError
-		errResponse.Title = "error retrieving records"
-		errResponse.Details = "There was an error retrieving the list of restaurants"
+		// var errResponse models.ErrorResponse
+		// errResponse.Status = http.StatusInternalServerError
+		// errResponse.Title = "error retrieving records"
+		// errResponse.Details = "There was an error retrieving the list of restaurants"
+		errResponse := formatErrorResponse("error retrieving resources", http.StatusInternalServerError)
 		json.NewEncoder(writer).Encode(errResponse)
 		return
 	}
@@ -91,8 +97,12 @@ func handleRestaurants(writer http.ResponseWriter, request *http.Request, _ http
 	json.NewEncoder(writer).Encode(resourceListResponse)
 }
 
-func handleErrorResponse(writer http.ResponseWriter, err error) {
+func formatErrorResponse(errorText string, statusCode int) models.ErrorResponse {
+	var errorResponse = models.ErrorResponse{}
+	errorResponse.Status = statusCode
+	errorResponse.Title = errorText
 
+	return errorResponse
 }
 
 //accepts a resource, formats it and returns the JSONAPI formatted ResourceResponse
