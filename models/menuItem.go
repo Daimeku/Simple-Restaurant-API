@@ -39,3 +39,31 @@ func (menuItem *MenuItem) populate(rows *sql.Rows) bool {
 
 	return true
 }
+
+func (menuItem *MenuItem) populateList(rows *sql.Rows) ([]MenuItem, error) {
+	menuItems := []MenuItem{}
+
+	var id int
+	var name string
+	var description string
+	var price string
+	var resId int
+
+	for rows.Next() {
+		menuItemCurr := MenuItem{}
+
+		err := rows.Scan(&id, &name, &description, &price, &resId)
+		if err != nil {
+			fmt.Println("Error reading menuItem row - ", err)
+			return menuItems, err
+		}
+
+		menuItemCurr.Id = id
+		menuItemCurr.Name = name
+		menuItemCurr.Description = description
+		menuItemCurr.Price = price
+		menuItemCurr.Type = "MenuItem"
+		menuItems = append(menuItems, menuItemCurr)
+	}
+	return menuItems, nil
+}

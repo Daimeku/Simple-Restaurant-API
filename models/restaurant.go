@@ -90,7 +90,7 @@ func (res *Restaurant) FindByField(fieldName string, fieldValue string) (bool, e
 		fmt.Println("error opening connection in model - ", err)
 		return false, err
 	}
-	fmt.Println(result.Columns())
+	// fmt.Println(result.Columns())
 	conf := res.Populate(result) // populate the restaurant and return confirmation
 
 	return conf, nil
@@ -172,6 +172,7 @@ func (res *Restaurant) PopulateListPtr(rows *sql.Rows) ([]*Restaurant, error) {
 	return resList, nil
 }
 
+//populates and returns a list of Restaurants
 func (res *Restaurant) PopulateList(rows *sql.Rows) ([]Restaurant, error) {
 	var resList []Restaurant
 
@@ -179,7 +180,7 @@ func (res *Restaurant) PopulateList(rows *sql.Rows) ([]Restaurant, error) {
 	for rows.Next() {
 		restaurant := Restaurant{}
 		restaurant.Type = "Restaurant"
-		// restaurant := NewRestaurant()
+
 		// populate the restaurant and check for errors
 		err := rows.Scan(&restaurant.Id, &restaurant.Name, &restaurant.SearchName)
 		if err != nil {
@@ -197,7 +198,9 @@ func (res *Restaurant) Populate(rows *sql.Rows) bool {
 	var resSearchName string
 
 	conf := rows.Next() //read the first row, conf=false if none
-
+	if conf != true {
+		return false
+	}
 	//read the column values into the variables
 	err := rows.Scan(&resId, &resName, &resSearchName)
 	if err != nil {
@@ -209,18 +212,24 @@ func (res *Restaurant) Populate(rows *sql.Rows) bool {
 	res.Id = resId
 	res.Name = resName
 	res.SearchName = resSearchName
+	conf = res.LoadMenuItems()
+	if conf != true {
+		fmt.Println("failed to load items for restaurant")
+	}
 
-	return conf
+	return true
 }
 
+//populates res.Menu with a list of menuItems
+//must be called after res.Id has been set
 func (res *Restaurant) LoadMenuItems() bool {
-
+	//open the connection
 	db, err := sql.Open(Driver, ConnectionString)
 	if err != nil {
 		fmt.Println("error opening connection for loading menuItems")
 		return false
 	}
-
+	//select the list of menuItems
 	result, err := db.Query("select * FROM menuItems WHERE restaurantId = ?", res.Id)
 	if err != nil {
 		fmt.Println("Error selecting menuItems - ", err)
@@ -228,12 +237,14 @@ func (res *Restaurant) LoadMenuItems() bool {
 	}
 
 	menuItem := MenuItem{}
-	conf := menuItem.populate(result)
-	if conf != true {
-		fmt.Println("failed to populate menuItem")
+	//populate the restaurant's menu
+	menu, err := menuItem.populateList(result)
+	if err != nil {
+		fmt.Println("failed to populate menu - ", err)
 		return false
 	}
-	res.Menu = append(res.Menu, menuItem)
+	res.Menu = menu
+
 	return true
 }
 
