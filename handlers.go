@@ -75,10 +75,6 @@ func handleRestaurants(writer http.ResponseWriter, request *http.Request, _ http
 		//format error response here 500 internal server error
 		writer.Header().Set("Content-Type", "application/json;charset=UTF-8")
 		writer.WriteHeader(http.StatusInternalServerError)
-		// var errResponse models.ErrorResponse
-		// errResponse.Status = http.StatusInternalServerError
-		// errResponse.Title = "error retrieving records"
-		// errResponse.Details = "There was an error retrieving the list of restaurants"
 		errResponse := formatErrorResponse("error retrieving resources", http.StatusInternalServerError)
 		json.NewEncoder(writer).Encode(errResponse)
 		return
@@ -96,6 +92,11 @@ func handleRestaurants(writer http.ResponseWriter, request *http.Request, _ http
 
 	resourceListResponse, _ := formatResourceListResponse(resList)
 	json.NewEncoder(writer).Encode(resourceListResponse)
+}
+
+//handles the menu route
+func handleMenu(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+
 }
 
 func formatErrorResponse(errorText string, statusCode int) models.ErrorResponse {

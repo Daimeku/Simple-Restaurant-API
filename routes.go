@@ -45,4 +45,10 @@ var routes = Routes{
 		"/data/restaurants/:restaurantSearchName",
 		handleRestaurant,
 	},
+	Route{
+		"menu",
+		"GET",
+		"/data/restaurants/:restaurantSearchName/menu",
+		handleMenu,
+	},
 }
