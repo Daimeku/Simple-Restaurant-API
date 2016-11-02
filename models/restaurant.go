@@ -238,7 +238,7 @@ func (res *Restaurant) LoadMenuItems() bool {
 
 	menuItem := MenuItem{}
 	//populate the restaurant's menu
-	menu, err := menuItem.populateList(result)
+	menu, err := menuItem.PopulateList(result)
 	if err != nil {
 		fmt.Println("failed to populate menu - ", err)
 		return false

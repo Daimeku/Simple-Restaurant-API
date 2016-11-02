@@ -15,7 +15,7 @@ type MenuItem struct {
 
 //queries for all menuItems and returns them
 //@ToDo paginate the results
-func (menuItem *MenuItem) findAll() ([]MenuItem, error) {
+func (menuItem *MenuItem) FindAll() ([]MenuItem, error) {
 
 	menuItems := []MenuItem{}
 	//open the DB connection
@@ -31,7 +31,7 @@ func (menuItem *MenuItem) findAll() ([]MenuItem, error) {
 		return menuItems, err
 	}
 
-	menuItems, err = menuItem.populateList(result)
+	menuItems, err = menuItem.PopulateList(result)
 	if err != nil {
 		fmt.Println("error populating the list - ", err)
 		return menuItems, err
@@ -41,7 +41,7 @@ func (menuItem *MenuItem) findAll() ([]MenuItem, error) {
 }
 
 //accepts a sql.Row and returns a populated *menuItem
-func (menuItem *MenuItem) populate(rows *sql.Rows) bool {
+func (menuItem *MenuItem) Populate(rows *sql.Rows) bool {
 	var id int
 	var name string
 	var description string
@@ -69,7 +69,7 @@ func (menuItem *MenuItem) populate(rows *sql.Rows) bool {
 }
 
 //accepts a sql.Row of menuItems and returns a populated list of menuItems
-func (menuItem *MenuItem) populateList(rows *sql.Rows) ([]MenuItem, error) {
+func (menuItem *MenuItem) PopulateList(rows *sql.Rows) ([]MenuItem, error) {
 	menuItems := []MenuItem{}
 
 	var id int

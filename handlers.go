@@ -96,7 +96,36 @@ func handleRestaurants(writer http.ResponseWriter, request *http.Request, _ http
 
 //handles the menu route
 func handleMenu(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+	writer.Header().Set("content-type", ContentType)
 
+	//find all menu items and check for errors
+	var menuItem *models.MenuItem
+	menuItems, err := menuItem.FindAll()
+	if err != nil {
+
+		writer.WriteHeader(http.StatusInternalServerError)
+		errResponse := formatErrorResponse("Error retrieving the menu items", http.StatusInternalServerError)
+		json.NewEncoder(writer).Encode(errResponse)
+		return
+	}
+
+	//convert the list into a list of []interface{}
+	resList := make([]interface{}, len(menuItems))
+	for v, t := range menuItems {
+		resList[v] = t
+	}
+
+	//format the response and check for errors
+	resourceListResponse, err := formatResourceListResponse(resList)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		errResponse := formatErrorResponse("Error formatting the response", http.StatusInternalServerError)
+		json.NewEncoder(writer).Encode(errResponse)
+		return
+	}
+	//encode and write the response
+	writer.WriteHeader(http.StatusOK)
+	json.NewEncoder(writer).Encode(resourceListResponse)
 }
 
 func formatErrorResponse(errorText string, statusCode int) models.ErrorResponse {
