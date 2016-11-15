@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/context"
 	"log"
 	"net/http"
 )
 
 func main() {
 	router := makeRouter()
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080", context.ClearHandler(router)))
 }
 
 //just checks if a connection to the database can be established

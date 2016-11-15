@@ -13,6 +13,7 @@ type Route struct {
 
 type Routes []Route
 
+//creates a router, assigns all routes to a handler
 func makeRouter() *httprouter.Router {
 	router := httprouter.New()
 	for _, route := range routes {
@@ -25,6 +26,7 @@ func makeRouter() *httprouter.Router {
 	return router
 }
 
+//list of all routes
 var routes = Routes{
 
 	Route{
